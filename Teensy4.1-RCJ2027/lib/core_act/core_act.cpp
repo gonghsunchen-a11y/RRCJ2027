@@ -120,7 +120,8 @@ void SetMotorSpeed(uint8_t port, float speed){
     analogWrite(motorPwmPins[i], 0);
     return;
   }
-  digitalWrite(motorDirPins[i], speed > 0 ? LOW : HIGH);
+  //digitalWrite(motorDirPins[i], speed > 0 ? LOW : HIGH);
+  digitalWrite(motorDirPins[i], speed < 0 ? LOW : HIGH);
   analogWrite(motorPwmPins[i], (int)(fabsf(speed) * 255.0f / 100.0f));
 }
 
