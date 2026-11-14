@@ -152,15 +152,17 @@ static float headingCorrection(float target_heading) {
 
 void RobotIKControl(float vx, float vy, float omega) {
   // Invert translation signs for the positive-right/positive-forward command convention.
-  SetMotorSpeed(1,  0.643f * vx - 0.766f * vy + omega);
-  SetMotorSpeed(2,  0.643f * vx + 0.766f * vy + omega);
-  SetMotorSpeed(3, -0.707f * vx + 0.707f * vy + omega);
-  SetMotorSpeed(4, -0.707f * vx - 0.707f * vy + omega);
+  Serial.printf("vx = %f, vy = %f\n", vx, vy);
+  SetMotorSpeed(1,  -0.643f * vx + 0.766f * vy + omega);
+  SetMotorSpeed(2,  -0.643f * vx - 0.766f * vy + omega);
+  SetMotorSpeed(3, 0.707f * vx - 0.707f * vy + omega);
+  SetMotorSpeed(4, 0.707f * vx + 0.707f * vy + omega);
 }
 
 // Robot-frame motion; rot_V nudges the target heading, clamped to 45..135
 void Vector_Motion(float Vx, float Vy, float rot_V) {
-  robot.robot_heading = constrain(robot.robot_heading + rot_V, 45.0f, 135.0f);
+  Serial.printf("vector motion %f, %f\n", Vx, Vy);
+  robot.robot_heading = constrain(robot.robot_heading + rot_V, 70.0f, 110.0f);
   RobotIKControl(Vx, Vy, headingCorrection(robot.robot_heading));
 }
 
