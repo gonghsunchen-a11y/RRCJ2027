@@ -7,12 +7,13 @@ int returnStage = 0;
 
 void setup(){
     core_act_init();
+    camera_dma_begin();
     Serial3.setTimeout(200);
 }
 
 void loop(){
     //MotorStop();
-    readTopMaix_polar();
+    read_camera();
     update_gyro_sensor();
 
     if (!topmaixData.valid) {
@@ -48,14 +49,14 @@ void loop(){
         if (abs(angleError) > 12) {
             // 兩側：越接近 270° 越慢
             speed = constrain(
-                12.0f + (abs(angleError) - 12) * 0.1f,
-                12.0f, 20.0f
+                15.0f + (abs(angleError) - 15) * 0.1f,
+                15.0f, 20.0f
             );
         } else {
             // 中間：越接近 distance 28 越慢
             speed = constrain(
-                12.0f + abs(distance - 28) * 0.2f,
-                12.0f, 20.0f
+                15.0f + abs(distance - 25) * 0.2f,
+                15.0f, 20.0f
             );
         }
 
@@ -63,8 +64,8 @@ void loop(){
             if (abs(angleError) > 5) {
                 // 此階段只左右移動，依角度減速
                 float sideSpeed = constrain(
-                    12.0f + (abs(angleError) - 5) * 0.1f,
-                    12.0f, 20.0f
+                    15.0f + (abs(angleError) - 5) * 0.1f,
+                    15.0f, 20.0f
                 );
 
                 Vector_Motion(
