@@ -34,9 +34,5 @@ void core_sense_init();
 void update_ball_sensor();
 void fast_update_line_sensor();
 bool calibrate_line_sensor(); // true while scanning
-<<<<<<< HEAD
-#endif
-=======
 void send_line_state();       // set PIN_0/PIN_1, send lineState to act core (Serial8)
 #endif
->>>>>>> fe52e0dbcfcd07409aaae8c95cdd78b429337788
