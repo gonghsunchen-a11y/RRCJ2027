@@ -19,9 +19,12 @@
 
 #define SLP 11
 #define BALL_POSESSION 38
+#define START_BUTTON 27 // button 1, pressed = LOW (INPUT_PULLUP)
 
+// Line flag from sense core: HIGH while a line is seen
 #define PIN_0 0
 #define PIN_1 1
+#define LS_COUNT 16 // line sensors, sensor ch at ch * 22.5 deg, CCW, 0 = right, 90 = front
 
 
 struct GyroData {
@@ -54,7 +57,17 @@ extern Adafruit_SSD1306 display;
 void core_act_init();
 void update_gyro_sensor();
 void drawMessage(const char* msg);
-void readTopMaix_polar();
+void readTopMaix_polar();  // old protocol: send 0xDD, wait for reply (blocking)
+
+// --- Top camera, new protocol: camera sends every frame, Serial3 RX by DMA ---
+// After camera_dma_begin(), readTopMaix_polar() no longer works
+void camera_dma_begin();
+bool read_camera();        // non-blocking, true when topmaixData got a new packet
+
+// --- Line (from sense core, Serial8) ---
+bool line_flag();                       // true if PIN_0 or PIN_1 is HIGH
+bool read_line_state(uint32_t& state);  // true if a valid packet arrived, keeps the newest
+float line_angle(uint32_t state, float fallback = -1); // deg 0-360 of the line, -1 if none
 
 // --- Motors ---
 void SetMotorSpeed(uint8_t port, float speed);   // port 1-4, speed -100..100

@@ -27,7 +27,7 @@ void printIrGroup(const char* name, int firstPort) {
 
 void setup() {
   core_sense_init();
-  analogWrite(LS_BRIGHTNESS, 255); // line sensor LED brightness (0-255)
+  analogWrite(LS_BRIGHTNESS, 155); // line sensor LED brightness (0-255)
 }
 
 void loop() {
@@ -36,7 +36,11 @@ void loop() {
   // ===== Line sensor (disabled) =====
   fast_update_line_sensor();
   scanning = calibrate_line_sensor(); // prints its own data while scanning
-  
+  if (!scanning) {
+    send_line_state();                // flag pins + UART to act core
+    digitalWriteFast(LED_BUILTIN, (lineState & 0xFFFF) != 0xFFFF); // LED 13 on = line seen
+  }
+
 
   // ===== IR ball sensor =====
   update_ball_sensor();

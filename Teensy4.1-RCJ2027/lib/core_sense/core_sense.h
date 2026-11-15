@@ -19,6 +19,10 @@
 #define LS_M2 15 // reserved, channel 16-31
 #define LS_COUNT 16 // channels in use (M1 only), 32 when M2 is used
 
+// Line flag to act core: HIGH while any sensor sees a line (faster than UART)
+#define PIN_0 0
+#define PIN_1 1
+
 extern const uint8_t IR_PINS[IR_COUNT];
 extern uint16_t irValue[IR_COUNT]; // higher = ball closer
 
@@ -30,4 +34,9 @@ void core_sense_init();
 void update_ball_sensor();
 void fast_update_line_sensor();
 bool calibrate_line_sensor(); // true while scanning
+<<<<<<< HEAD
 #endif
+=======
+void send_line_state();       // set PIN_0/PIN_1, send lineState to act core (Serial8)
+#endif
+>>>>>>> fe52e0dbcfcd07409aaae8c95cdd78b429337788

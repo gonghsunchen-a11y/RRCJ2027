@@ -14,6 +14,11 @@ uint32_t lineState = 0xFFFFFFFF;
 
 void core_sense_init() {
     Serial.begin(115200);
+    Serial8.begin(921600); // to act core
+    pinMode(PIN_0, OUTPUT);
+    pinMode(PIN_1, OUTPUT);
+    digitalWrite(PIN_0, LOW);
+    digitalWrite(PIN_1, LOW);
     pinMode(LINE_SCAN_BUTTON, INPUT_PULLUP);
     for (int i = 0; i < IR_COUNT; i++) {
         pinMode(IR_PINS[i], INPUT);
@@ -26,11 +31,14 @@ void core_sense_init() {
     pinMode(LS_S2, OUTPUT);
     pinMode(LS_S3, OUTPUT);
     pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LS_M1, INPUT);
+    pinMode(LS_M2, INPUT);
 
     // Load thresholds saved by calibrate_line_sensor(); erased EEPROM reads 0xFFFF
+    // M1 = avg_ls[0-15], M2 = avg_ls[16-31] (saved by mux2_test)
     EEPROM.get(0, avg_ls);
-    if (avg_ls[0] == 0xFFFF) {
-        for (int i = 0; i < 32; i++) avg_ls[i] = 512;
+    for (int i = 0; i < 32; i++) {
+        if (avg_ls[i] == 0xFFFF) avg_ls[i] = 512;
     }
 }
 
@@ -59,17 +67,33 @@ void fast_update_line_sensor() {
         delayMicroseconds(10);
 
         uint16_t r1 = analogRead(LS_M1);
-        // uint16_t r2 = analogRead(LS_M2); // M2 reserved
+        uint16_t r2 = analogRead(LS_M2);
         lsRaw[ch] = r1;
-        // lsRaw[ch + 16] = r2;
+        lsRaw[ch + 16] = r2;
 
         if (r1 < avg_ls[ch])    rawState &= ~(1UL << ch);
-        // if (r2 < avg_ls[ch+16]) rawState &= ~(1UL << (ch + 16));
+        if (r2 < avg_ls[ch+16]) rawState &= ~(1UL << (ch + 16));
     }
 
     // Bit clears only if below threshold in this scan AND the previous one
     lineState = prevRaw | rawState;
     prevRaw   = rawState;
+}
+
+// Call every loop after fast_update_line_sensor().
+// Line seen: PIN_0/PIN_1 HIGH, then send packet AA s0 s1 s2 s3 checksum (sum of s0-s3)
+// No line:   PIN_0/PIN_1 LOW, nothing sent
+void send_line_state() {
+    bool line = lineState != 0xFFFFFFFF; // M1 (bit 0-15) or M2 (bit 16-31)
+    digitalWriteFast(PIN_0, line);
+    digitalWriteFast(PIN_1, line);
+    if (!line) return;
+
+    uint8_t pkt[6] = {0xAA,
+                      (uint8_t)(lineState),       (uint8_t)(lineState >> 8),
+                      (uint8_t)(lineState >> 16), (uint8_t)(lineState >> 24), 0};
+    for (int i = 1; i <= 4; i++) pkt[5] += pkt[i];
+    Serial8.write(pkt, 6);
 }
 
 // Call every loop after fast_update_line_sensor().
