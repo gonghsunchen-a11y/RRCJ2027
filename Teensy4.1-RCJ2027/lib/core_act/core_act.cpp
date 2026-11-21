@@ -165,18 +165,39 @@ bool line_flag() {
   return digitalReadFast(PIN_0) || digitalReadFast(PIN_1);
 }
 
-// Packet: AA s0 s1 s2 s3 checksum (sum of s0-s3)
-bool read_line_state(uint32_t& state) {
-  bool got = false;
-  while (Serial8.available() >= 6) {
-    if (Serial8.peek() != 0xAA) { Serial8.read(); continue; } // resync
-    uint8_t b[6];
-    Serial8.readBytes(b, 6);
-    if ((uint8_t)(b[1] + b[2] + b[3] + b[4]) != b[5]) continue;
-    state = b[1] | (b[2] << 8) | (b[3] << 16) | ((uint32_t)b[4] << 24);
-    got = true;
+SensePacketUpdates read_sense_state(uint32_t& state, BallSide& ballSide) {
+  SensePacketUpdates updates{};
+  while (Serial8.available()) {
+    const int header = Serial8.peek();
+    if (header == 0xAA) {
+      // Line packet: AA s0 s1 s2 s3 checksum (sum of s0-s3).
+      uint8_t packet[6];
+      if (Serial8.available() < static_cast<int>(sizeof(packet))) break;
+      Serial8.readBytes(packet, sizeof(packet));
+      if (static_cast<uint8_t>(packet[1] + packet[2] + packet[3] + packet[4]) != packet[5]) continue;
+      state = static_cast<uint32_t>(packet[1]) |
+              (static_cast<uint32_t>(packet[2]) << 8) |
+              (static_cast<uint32_t>(packet[3]) << 16) |
+              (static_cast<uint32_t>(packet[4]) << 24);
+      updates.line = true;
+    } else if (header == BALL_SIDE_HEADER) {
+      if (Serial8.available() < 3) break;
+      Serial8.read();
+      const uint8_t side = Serial8.read();
+      const uint8_t checksum = Serial8.read();
+      if (side > static_cast<uint8_t>(BallSide::Left) || checksum != ballSideChecksum(side)) continue;
+      ballSide = static_cast<BallSide>(side);
+      updates.ball = true;
+    } else {
+      Serial8.read(); // Skip noise until the next packet header.
+    }
   }
-  return got;
+  return updates;
+}
+
+bool read_line_state(uint32_t& state) {
+  BallSide ignored = BallSide::None;
+  return read_sense_state(state, ignored).line;
 }
 
 // Average direction of the sensors that see the line (bit = 0)

@@ -28,7 +28,7 @@ void loop(){
         int angle = topmaixData.goal_angle;
         int distance = topmaixData.goal_dist;
 
-        if (returnStage == 0 && angle > 325 && distance > 70) {
+        if (returnStage == 0 && angle > 325 && distance > 60) {
             returnStage = 1;
         }
 

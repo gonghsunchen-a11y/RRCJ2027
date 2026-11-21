@@ -1,6 +1,7 @@
 #ifndef CORE_ACT_H
 #define CORE_ACT_H
 #include <Arduino.h>
+#include <ball_side.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -66,7 +67,12 @@ bool read_camera();        // non-blocking, true when topmaixData got a new pack
 
 // --- Line (from sense core, Serial8) ---
 bool line_flag();                       // true if PIN_0 or PIN_1 is HIGH
-bool read_line_state(uint32_t& state);  // true if a valid packet arrived, keeps the newest
+struct SensePacketUpdates {
+  bool line;
+  bool ball;
+};
+SensePacketUpdates read_sense_state(uint32_t& state, BallSide& ballSide);
+bool read_line_state(uint32_t& state);  // true if a valid line packet arrived
 float line_angle(uint32_t state, float fallback = -1); // deg 0-360 of the line, -1 if none
 
 // --- Motors ---

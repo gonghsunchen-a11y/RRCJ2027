@@ -12,21 +12,21 @@
 // The side limits only cap speed toward that line, never push the robot into it
 
 #define SPEED       30 // forward / backward
-#define SIDE_SPEED  -40 // default sideways speed (+ = right, - = left)
+#define SIDE_SPEED  40 // default sideways speed (+ = right, - = left)
 #define SLOW_SPEED  10 // out sensor sees the side line
 #define BACK_SPEED  15 // in sensor sees the side line
 
 // Sensors as lineState bits (mux 2 channel + 16)
 #define M1(ch) (1UL << (ch))
 #define M2(ch) (1UL << (16 + (ch)))
-#define FRONT_IN  M2(14)
-#define FRONT_OUT M2(15)
-#define R_OUT M2(0)
-#define R_MID M2(1)
-#define R_IN  M2(2)
-#define L_OUT M2(5)
-#define L_MID M2(4)
-#define L_IN  M2(3)
+#define FRONT_IN  M2(7)
+#define FRONT_OUT M2(11)
+#define R_OUT M2(15)
+#define R_MID M2(14)
+#define R_IN  M2(13)
+#define L_OUT M2(2)
+#define L_MID M2(1)
+#define L_IN  M2(0)
 
 #define midls M1(4)
 
